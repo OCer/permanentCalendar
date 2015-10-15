@@ -1,0 +1,397 @@
+#include<stdio.h>
+#include<conio.h>
+#include<stdlib.h>
+#include<time.h>
+#include<windows.h>
+#include<string.h>
+
+
+int _(void)    // 普通数据输入 （不可有空白符） 
+{
+	char val[11] = {0};  				  // 把数组初始化为'\0' ，（非必要） 
+	int temp;
+	int key = 1; 
+	key = scanf("%[9-0]", val); 	      // 不能有空格 
+
+	while(key == 0 || getchar() != '\n')  // 利用返回值判断是否正确输入（读取失败返回0），如果不是读取失败，就判断是否有非法输入（前后关系不能乱） 
+	{
+		if(key == 0 || getchar() != '\n') // 空输入或非法输入时清除缓存（空输入时就不可能是非法输入） 
+		{
+			key = 1;
+			while(getchar() != '\n');
+		}
+		printf("\t输入错误，请重新输入：");
+		key = scanf("%[9-0]", val);
+	}
+	temp = atoi(val);
+	return temp;
+}
+
+/*
+int Judge(char *p)    // 判断字符串内是否有空白符 
+{
+	int len = strlen(p);
+	int i = 0;
+	if(p != NULL)
+	{
+		while(p[i] == ' ' || p[i] == '\t')  // 判断字符串开始是否为空白符 
+		{
+			++i;
+			if(i == len)  				    // 如果全是空白符，则要求重新输入 
+			{
+				return 1;
+			}
+		}
+		while(p[i] >= '0' && p[i] <= '9')   // 判断数字后有没有空白符 
+		{
+			++i;
+			if(i == len)					// 如果没有空白符，则表示成功输入 
+			{
+				return 0;
+			}
+		}
+		while(p[i] == ' ' || p[i] == '\t')	// 判断字符串后有没有空白符 
+		{
+			++i;
+			if(i == len)					// 如果全部是空白符，则表示输入成功 
+			{
+				return 0;
+			}
+		}
+	}
+	else			 						// 如果是NULL，说明输入不成功，要求重新输入 
+	{
+		return 1;
+	}
+	return 1;								// 如果空白符不是结束（即 空白符后还有字符），则说明输入不成功，要求重新输入 
+}
+
+int _(void)    // 普通数据输入（前后可带空白符） 
+{
+	char val[11] = {0};
+	int temp;
+	int key = 1; 
+	key = scanf("%[9-0 \t]", val); 
+
+	while(key == 0 || Judge(val) || getchar() != '\n')
+	{ 
+		if(key == 0 || getchar() != '\n')
+		{
+			key = 1;
+			while(getchar() != '\n');
+		}
+		printf("\t输入错误，请重新输入：");
+		key = scanf("%[0-9 \t]", val);
+	}
+	temp = atoi(val);
+	return temp;
+}
+*/
+
+void show(void)          // 主菜单显示 
+{
+	printf("\n\n\n\t\t     ************************************\n");
+	printf("\t\t     *  万年历，可按以下方法进行查询：  *\n");
+	printf("\t\t     *  1、精确查找某天的日历。         *\n");
+	printf("\t\t     *  2、按月份查看日历。             *\n");
+	printf("\t\t     *  3、按年份查看日历。             *\n");
+	printf("\t\t     *  4、查看当前时间。               *\n");
+	printf("\t\t     *  5、定时关机。                   *\n");
+	printf("\t\t     *  6、取消关机。                   *\n");
+	printf("\t\t     *  0、退出程序。                   *\n");
+	printf("\t\t     ************************************\n");
+	printf("\n\t################################################################\n\t请输入选项：");
+	return;
+}
+
+int MaxDay(int year, int month)      // 返回该月最大天数 
+{
+	int day;
+	if(((month>0) && (month<8) && (month%2 != 0)) || ((month>7) && (month<13) && (month%2 == 0)))
+	{
+		day = 31;
+	}
+	else if(month == 2)
+	{
+		if(((year%4 == 0) && (year%100 !=0)) || (year%400 == 0))
+		{
+			day = 29;
+		}
+		else
+		{
+			day = 28;
+		}
+	}
+	else
+	{
+		day = 30;
+	}
+	return day;
+}
+
+int ScanfYear(void)        // 输入年份
+{
+	int year;
+	printf("\t请输入年份：");
+	year = _();
+	while((year<1) || (year>10000))
+	{
+		printf("\t年份输入有误，重新输入：");
+		year = _();
+	}
+	return year;
+}
+
+int ScanfMonth(void)        // 输入月份 
+{
+	int month;
+	printf("\t请输入月份：");
+	month = _();
+	while((month<1) || (month>12))
+	{
+		printf("\t月份输入有误，重新输入：");
+		month = _();
+	}
+	return month;
+}
+
+int ScanfDay(int year, int month)     // 输入天数 
+{
+	int day;
+	int max;
+	max = MaxDay(year, month);
+	printf("\t请输入日数：");
+	day = _();
+	while((day<1) || (day>max))
+	{
+		printf("\t日数输入有误，重新输入：");
+		day = _();
+	}
+	return day;
+}
+
+int SumDay(int year, int month, int day)       // 求总天数 并返回 
+{
+	int SumLeapYear;
+	int SumCommonYear;
+	int Sumday;
+	int i;
+	SumLeapYear = ((year-1) / 4) - ((year-1) / 100) + ((year-1) / 400);  // 因为要求的年份还没过去，所以要减1 
+	SumCommonYear = year - SumLeapYear - 1;
+	Sumday = (SumLeapYear * 366) + (SumCommonYear * 365) + day;
+	for(i=1; i<month; ++i)
+	{
+		Sumday = Sumday + MaxDay(year, i);
+	}
+	return Sumday;
+}
+
+int Week(int Sumday)     // 求该天是星期几 并返回 
+{
+	Sumday = Sumday % 7;
+	return Sumday;
+}
+
+char *ShowWeek(int week)    // 返回星期显示 
+{
+	static char *p[7] = {"日", "一", "二", "三", "四", "五", "六"};
+	return p[week];
+}
+
+char *ShowMonth(int month)    // 返回月份显示
+{
+	static char *p[12] = {"一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"};
+	return p[month-1];
+}
+
+void ExactSearch(void)     // 精确查找某天的日历
+{
+	int year;
+	int month;
+	int day;
+	int Sumday;
+	int week;
+	year = ScanfYear();
+	month = ScanfMonth();
+	day = ScanfDay(year, month);
+	Sumday = SumDay(year, month, day);
+	week = Week(Sumday);
+	printf("\n\n\t查询结果如下：\n");
+	printf("\t%d年%d月%d日\t星期%s\n", year, month, day, ShowWeek(week));
+	return;
+}
+
+void IntermediateFunction(int day, int len)  // 输出结果 
+{
+	int i;
+//	char *p;
+//	char *q;
+//	p = ShowWeek(len);
+//	q = ShowWeek(0);
+	printf("\t");
+	for(i=0; i<7; ++i)
+	{
+		printf("%s\t", ShowWeek(i));
+	}
+	printf("\n");
+	i = 0;
+	printf("\t");
+	while(i < len)//(strcmp(q, p) != 0)
+	{
+		++i;
+//		q = ShowWeek(i);  // 可以使用字符串的方式打印 \t 
+		printf(" \t");
+	}
+	for(i=0; i<day; ++i)
+	{
+		printf("%d\t", i+1);
+		if((i+len+1)%7 == 0)
+		{
+			printf("\n\t");
+		}
+	}
+	return;
+}
+
+void MonthExactSearch(void)  // 按月份查找 
+{
+	int year;
+	int month;
+	int day;
+	int sumday;
+	int i;
+	int len;
+	year = ScanfYear();
+	month = ScanfMonth();
+	day = MaxDay(year, month);
+	sumday = SumDay(year, month, 1);
+	len = Week(sumday);
+	printf("\n\t查询结果：\n\t%d年\n\n\t\t\t\t*** %s月 ***\n\n", year, ShowMonth(month));
+	IntermediateFunction(day, len);
+	return;
+}
+
+void YearExactSearch(void)  // 按年份查找 
+{
+	int year;
+	int month;
+	int day;
+	int sumday;
+	int i;
+	int len;
+	year = ScanfYear();
+	printf("\n\t查询结果：\n\t%d年", year);
+	for(month=1; month<13; ++month)
+	{
+		day = MaxDay(year, month);
+		sumday = SumDay(year, month, 1);
+		len = Week(sumday);
+		printf("\n\n\t\t\t\t*** %s月 ***\n\n", ShowMonth(month));
+		IntermediateFunction(day, len);
+		printf("\n\n");
+	}
+	return;
+}
+
+void ShowCurrentTime(void)      // 查看当前时间 
+{
+	time_t Time;
+	struct tm *p;
+	Time = time(NULL);
+	p = localtime(&Time);
+	printf("\n\t查询结果：\n\n\t");
+	printf("%d年%d月%d日 %d时%d分%d秒 星期%s   从今年1月1日到现在已过了%d天\n", p->tm_year + 1900, p->tm_mon + 1, p->tm_mday, 
+			p->tm_hour, p->tm_min, p->tm_sec, ShowWeek(p->tm_wday), p->tm_yday - 1);
+	return;
+}
+
+void TimingShutdown(void)    // 定时关机 
+{
+	int val = 0;
+	char p[10];
+	char array[26] = {"shutdown -s -t "};
+	HANDLE consolehwnd;    //  创建句柄
+	printf("\n\t请输入定时关机时间（秒）：");
+	val = _();
+	itoa(val, p, 10);
+	strcat(array, p);
+	system(array);
+	consolehwnd = GetStdHandle(STD_OUTPUT_HANDLE);         // 实例化句柄
+	SetConsoleTextAttribute(consolehwnd, FOREGROUND_RED);  // 设置字体颜色
+	printf("\n\t如若设置成功，屏幕右下角会有提示。若是不成功，程序会列出很多提示信\n");
+	printf("\t息，这种情况一般是已经设置有自动关机引起的，先用选项6取消即可。\n\n"); 
+	SetConsoleTextAttribute(consolehwnd, FOREGROUND_GREEN);
+	printf("\t\t<<注：设置定时关机后纵使关闭本程序依然会关机。>>\n");
+//	SetConsoleTextAttribute(consolehwnd, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);  // 变回白色 
+	return;
+}
+
+void CancelShutdown(void)    // 取消关机 
+{
+	system("shutdown -a");
+	HANDLE consolehwnd;
+	consolehwnd = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(consolehwnd, FOREGROUND_GREEN);
+	printf("\n\n\n\t\t\t<<您已成功取消定时关机！>>\n");
+	return;
+}
+
+void Switch(void)        // 主菜单选择 
+{
+	int val;
+	val = _();
+	switch(val)
+	{
+		case 0:
+				printf("\t请按任意键结束程序...\n");
+				getch(); 
+				exit(EXIT_SUCCESS);
+				
+		case 1:
+				ExactSearch();
+				getch(); 
+				return;
+
+		case 2:
+				MonthExactSearch();
+				getch();
+				return;
+
+		case 3:
+				YearExactSearch();
+				getch();
+				return;
+
+		case 4:
+				ShowCurrentTime();
+				getch();
+				return;
+				
+		case 5:
+				TimingShutdown();
+				getch();
+				return;
+				
+		case 6:
+				CancelShutdown();
+				getch();
+				return;
+				
+		default :
+				  printf("\t无该选项，请按任意键后重新输入...\n");
+			 	  getch();
+				  return;
+	}
+}
+
+int main(int argc, char *argv[])
+{
+	while(1)
+	{
+		system("cls");
+		system("color f");  // 运行到该处时，全屏文字变成亮白色 
+		show();
+		Switch();
+	}
+	return EXIT_SUCCESS;
+}
